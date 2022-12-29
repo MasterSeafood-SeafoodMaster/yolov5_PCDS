@@ -1,13 +1,9 @@
-import cv2
-import torch
 import numpy as np
-import toolkit as tk
-from models.common import DetectMultiBackend
-from utils.torch_utils import select_device
+import torch
+import cv2
+
 from utils.augmentations import letterbox
 from utils.general import non_max_suppression
-
-device = select_device("")
 imgsz = (640, 640)
 conf_thres = 0.662
 iou_thres = 0.5
@@ -41,24 +37,5 @@ def yoloPred(frame, yolo_model):
 	for i in range(len(pred)):
 		for j in range(len(pred[i])):
 			pred[i][j] = int(pred[i][j])
+
 	return pred
-
-
-model = DetectMultiBackend("./custom_model/best.pt", device=device, dnn=False, data="./data/baseball_dataset.yaml", fp16=False)
-stride, names, pt = model.stride, model.names, model.pt
-model.warmup(imgsz=(1 if pt else bs, 3, *imgsz))
-
-cap = cv2.VideoCapture("./videos/2016_04_07_07_19_24BackColor.avi")
-vLength = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
-for f in range(vLength):
-	ret, frame = cap.read()
-	frame = cv2.resize(frame, (640, 480))
-	
-
-	pred = yoloPred(frame, model)
-	for bbox in pred:
-		frame = cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (0, 0, 255), 2)
-	cv2.imshow("live", frame)
-	cv2.waitKey(1)
-cv2.destroyAllWindows()
